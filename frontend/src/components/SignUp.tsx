@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import logoImg from '../assets/image.png';
-import { User, Calendar, Mail } from 'lucide-react';
+import { Calendar } from 'lucide-react';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
