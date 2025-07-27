@@ -1,40 +1,143 @@
+
 import React, { useState } from 'react';
+import logoImg from '../assets/image.png';
+import { Eye, EyeOff } from 'lucide-react';
+import { sendOtp, verifyOtp } from '../config/api';
+import { toast } from 'react-toastify';
 
 interface Props {
   onSwitch: (page: string) => void;
+  onSignInSuccess: (user: any) => void;
 }
 
-const SignIn: React.FC<Props> = ({ onSwitch }) => {
+const SignIn: React.FC<Props> = ({ onSwitch, onSignInSuccess }) => {
   const [email, setEmail] = useState('');
   const [otp, setOtp] = useState('');
   const [showOtp, setShowOtp] = useState(false);
+  const [loading, setLoading] = useState(false);
+
+  const handleResendOtp = async () => {
+    if (!email) {
+      toast.error('Please enter your email first!');
+      return;
+    }
+    setLoading(true);
+    try {
+      await sendOtp({ email });
+      toast.success('OTP sent to your email!');
+    } catch (err: unknown) {
+      const error = err as { response?: { data?: { message?: string } } };
+      toast.error(error?.response?.data?.message || 'Failed to send OTP');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSignIn = async () => {
+    if (!email || !otp) {
+      toast.error('Please enter both email and OTP!');
+      return;
+    }
+    setLoading(true);
+    try {
+      const res = await verifyOtp({ email, otp });
+      const { token, user } = res.data;
+      localStorage.setItem('token', token);
+      localStorage.setItem('user', JSON.stringify(user));
+      toast.success('Sign in successful!');
+      if (onSignInSuccess) onSignInSuccess(user);
+    } catch (err: unknown) {
+      const error = err as { response?: { data?: { message?: string } } };
+      toast.error(error?.response?.data?.message || 'Failed to sign in');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
-    <div className="flex min-h-screen bg-white font-sans">
-      <div className="flex-1 flex flex-col items-center justify-center py-8 bg-white rounded-tl-2xl rounded-bl-2xl border border-r-0 border-gray-200 shadow-none">
-        <div className="flex items-center font-semibold text-xl mb-8 gap-2">
-          <span className="text-2xl mr-1">🌟</span> <span className="font-bold text-xl text-gray-900">HD</span>
-        </div>
-        <div className="w-80 bg-white rounded-xl shadow p-6 flex flex-col gap-2">
-          <h2 className="text-2xl font-bold mb-1">Sign in</h2>
-          <p className="text-base text-gray-500 mb-4">Please login to continue to your account.</p>
-          <div className="text-sm text-gray-700 mt-2 mb-1">Email</div>
-          <input className="w-full px-3 py-2 border border-gray-300 rounded-md text-base mb-1 outline-none" value={email} onChange={e => setEmail(e.target.value)} placeholder="jonas_kahnwald@gmail.com" />
-          <div className="text-sm text-gray-700 mt-2 mb-1">OTP</div>
-          <div className="flex items-center">
-            <input className="w-full px-3 py-2 border border-gray-300 rounded-md text-base mb-1 outline-none" value={otp} onChange={e => setOtp(e.target.value)} placeholder="OTP" type={showOtp ? 'text' : 'password'} />
-            <button className="bg-none border-none text-lg cursor-pointer ml-2" type="button" onClick={() => setShowOtp(s => !s)}>{showOtp ? '🙈' : '👁️'}</button>
+    <div className="flex min-h-screen bg-gray-50 font-sans">
+      <div className="flex-1 flex flex-col items-center justify-center py-8 bg-white">
+        <div className="w-96 px-8">
+          <div className="flex items-center font-semibold text-xl mb-8 gap-2">
+            <img src={logoImg} alt="Logo" className="h-8 w-8 object-contain mr-1" />
+            <span className="font-bold text-xl text-gray-900">HD</span>
           </div>
-          <div className="text-sm text-gray-600 mb-2"><span className="text-blue-600 cursor-pointer underline">Resend OTP</span></div>
-          <div className="flex items-center mb-2">
-            <input type="checkbox" id="keepLoggedIn" className="mr-2" />
-            <label htmlFor="keepLoggedIn" className="text-sm">Keep me logged in</label>
+          
+          <h2 className="text-3xl font-bold mb-2">Sign in</h2>
+          <p className="text-base text-gray-500 mb-8">Please login to continue to your account.</p>
+          
+          <div className="space-y-4">
+            <div>
+              <label className="text-sm text-gray-600 mb-2 block">Email</label>
+              <input 
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg text-base outline-none focus:border-blue-500 transition-colors" 
+                value={email} 
+                onChange={e => setEmail(e.target.value)} 
+                placeholder="jonas_kahnwald@gmail.com"
+                type="email"
+              />
+            </div>
+            
+            <div>
+              <label className="text-sm text-gray-600 mb-2 block">OTP</label>
+              <div className="relative">
+                <input 
+                  className="w-full px-4 py-3 pr-12 border border-gray-300 rounded-lg text-base outline-none focus:border-blue-500 transition-colors" 
+                  value={otp} 
+                  onChange={e => setOtp(e.target.value)} 
+                  placeholder="Enter OTP" 
+                  type={showOtp ? 'text' : 'password'} 
+                />
+                <button 
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors" 
+                  type="button" 
+                  onClick={() => setShowOtp(s => !s)}
+                >
+                  {showOtp ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                </button>
+              </div>
+              <button className="text-sm text-blue-600 hover:underline mt-2" type="button" onClick={handleResendOtp} disabled={loading}>
+                {loading ? 'Sending...' : 'Resend OTP'}
+              </button>
+            </div>
+            
+            <div className="flex items-center">
+              <input 
+                type="checkbox" 
+                id="keepLoggedIn" 
+                className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500" 
+              />
+              <label htmlFor="keepLoggedIn" className="text-sm text-gray-700 ml-2">
+                Keep me logged in
+              </label>
+            </div>
           </div>
-          <button className="w-full py-2 bg-blue-600 text-white rounded-md font-semibold text-base my-3 shadow" type="button">Sign in</button>
-          <div className="text-sm text-gray-600 mt-2 text-left">Need an account? <span className="text-blue-600 cursor-pointer underline ml-1" onClick={() => onSwitch('signup')}>Create one</span></div>
+          
+          <button
+            className="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium text-base mt-6 transition-colors disabled:opacity-60"
+            type="button"
+            onClick={handleSignIn}
+            disabled={loading}
+          >
+            {loading ? 'Signing in...' : 'Sign in'}
+          </button>
+          
+          <div className="text-sm text-gray-600 mt-6 text-center">
+            Need an account? 
+            <span className="text-blue-600 cursor-pointer hover:underline ml-1" onClick={() => onSwitch('signup')}>
+              Create one
+            </span>
+          </div>
         </div>
       </div>
-      <div className="flex-1 flex items-center justify-center bg-black rounded-tr-2xl rounded-br-2xl overflow-hidden">
-        <img src="https://wallpapercave.com/wp/wp10292836.jpg" alt="bg" className="w-full h-full object-cover rounded-tr-2xl rounded-br-2xl" />
+      
+      <div className="flex-1 bg-gradient-to-br from-blue-900 to-black rounded-l-3xl overflow-hidden relative">
+        <div className="absolute inset-0 bg-gradient-to-br from-blue-600/20 to-purple-600/20"></div>
+        <img 
+          src="https://images.unsplash.com/photo-1557683316-973673baf926?w=1200&h=800&fit=crop" 
+          alt="Abstract blue waves" 
+          className="w-full h-full object-cover opacity-80 mix-blend-overlay"
+        />
       </div>
     </div>
   );
