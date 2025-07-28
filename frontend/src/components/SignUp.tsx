@@ -8,6 +8,8 @@ interface Props {
   onSwitch: (page: string) => void;
 }
 
+
+import blueAbstract from "../assets/img19.webp";
 import { sendOtp, verifyOtp } from '../config/api';
 
 const SignUp: React.FC<Props> = ({ onSwitch }) => {
@@ -95,13 +97,22 @@ const SignUp: React.FC<Props> = ({ onSwitch }) => {
             <div>
               <label className="text-xs font-medium text-gray-400 mb-1 block tracking-wide">Date of Birth</label>
               <div className="relative">
-                <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-300 w-5 h-5" />
+                <span
+                  className="absolute left-4 top-1/2 -translate-y-1/2 text-blue-500 w-5 h-5 flex items-center pointer-events-none"
+                  aria-hidden="true"
+                >
+                  <Calendar />
+                </span>
                 <input
-                  className="w-full pl-12 pr-4 py-3 border border-gray-200 rounded-lg text-base outline-none focus:border-blue-500 transition-colors bg-gray-50 placeholder-gray-400"
+                  id="dob-input"
+                  type="date"
+                  className="w-full pl-12 pr-4 py-3 border border-gray-200 rounded-lg text-base outline-none focus:border-blue-500 transition-colors bg-gray-50 placeholder-gray-400 custom-date-input"
                   value={dob}
                   onChange={e => setDob(e.target.value)}
-                  placeholder="11 December 1997"
+                  placeholder="YYYY-MM-DD"
+                  max={new Date().toISOString().slice(0, 10)}
                   disabled={otpSent}
+                  style={{ WebkitAppearance: 'none', MozAppearance: 'none', appearance: 'none', color: dob ? '#111827' : '#9ca3af', backgroundColor: '#f9fafb', fontWeight: 500 }}
                 />
               </div>
             </div>
@@ -153,7 +164,7 @@ const SignUp: React.FC<Props> = ({ onSwitch }) => {
           )}
           
           <div className="text-sm text-gray-400 mt-6 text-center">
-            Already have an account??
+            Already have an account?
             <span className="text-blue-600 cursor-pointer hover:underline ml-1 font-medium" onClick={() => onSwitch('signin')}>
               Sign in
             </span>
@@ -161,14 +172,13 @@ const SignUp: React.FC<Props> = ({ onSwitch }) => {
         </div>
       </div>
       
-      <div className="flex-1 bg-gradient-to-br from-blue-900 to-black rounded-l-3xl overflow-hidden relative">
-        <div className="absolute inset-0 bg-gradient-to-br from-blue-600/20 to-purple-600/20"></div>
-        <img 
-          src="https://images.unsplash.com/photo-1557683316-973673baf926?w=1200&h=800&fit=crop" 
-          alt="Abstract blue waves" 
-          className="w-full h-full object-cover opacity-80 mix-blend-overlay"
+      <div className="flex-1 rounded-l-3xl overflow-hidden relative">
+        <img
+          src={blueAbstract}
+          alt="Abstract blue waves"
+          className="w-full h-full object-cover"
+          style={{ objectFit: 'cover', width: '100%', height: '100%', display: 'block' }}
         />
-        {/* You can replace the image with a better match for the blue wave pattern shown in your design */}
       </div>
     </div>
   );

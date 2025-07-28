@@ -1,6 +1,7 @@
 
 import React, { useState } from 'react';
 import logoImg from '../assets/image.png';
+import blueAbstract from "../assets/img19.webp"
 import { Eye, EyeOff } from 'lucide-react';
 import { sendOtp, verifyOtp } from '../config/api';
 import { toast } from 'react-toastify';
@@ -131,12 +132,12 @@ const SignIn: React.FC<Props> = ({ onSwitch, onSignInSuccess }) => {
         </div>
       </div>
       
-      <div className="flex-1 bg-gradient-to-br from-blue-900 to-black rounded-l-3xl overflow-hidden relative">
-        <div className="absolute inset-0 bg-gradient-to-br from-blue-600/20 to-purple-600/20"></div>
-        <img 
-          src="https://images.unsplash.com/photo-1557683316-973673baf926?w=1200&h=800&fit=crop" 
-          alt="Abstract blue waves" 
-          className="w-full h-full object-cover opacity-80 mix-blend-overlay"
+      <div className="flex-1 rounded-l-3xl overflow-hidden relative">
+        <img
+          src={blueAbstract}
+          alt="Abstract blue waves"
+          className="w-full h-full object-cover"
+          style={{ objectFit: 'cover', width: '100%', height: '100%', display: 'block' }}
         />
       </div>
     </div>
