@@ -127,6 +127,29 @@ const Dashboard: React.FC<Props> = ({ onSignOut, user }) => {
     setEditContent('');
   };
 
+  // Muted color palette for notes
+  const noteColors = [
+    '#f1f5f9', // slate-100
+    '#fef9c3', // yellow-100
+    '#f0fdf4', // green-50
+    '#f3f4f6', // gray-100
+    '#f0f9ff', // sky-50
+    '#fdf2f8', // pink-50
+    '#f3e8ff', // purple-50
+    '#fef2f2', // red-50
+    '#f1f5f9', // blue-50
+    '#fefce8', // amber-50
+  ];
+
+  // Assign a color to each note based on its _id (stable random)
+  const getNoteColor = (id: string) => {
+    let hash = 0;
+    for (let i = 0; i < id.length; i++) {
+      hash = id.charCodeAt(i) + ((hash << 5) - hash);
+    }
+    return noteColors[Math.abs(hash) % noteColors.length];
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-100 to-blue-100 font-sans flex flex-col items-center pt-6 px-2">
       <div className="w-full max-w-md flex items-center justify-between font-semibold text-lg mb-4 px-2 sm:px-0">
@@ -141,12 +164,9 @@ const Dashboard: React.FC<Props> = ({ onSignOut, user }) => {
         </div>
         <button className="text-blue-600 cursor-pointer text-base underline hover:text-blue-800 transition" onClick={onSignOut}>Sign Out</button>
       </div>
-      <div className="w-full max-w-md bg-white rounded-2xl shadow-xl p-5 sm:p-8 flex flex-col items-center gap-3 border border-slate-200">
-        <div className="flex flex-col items-center w-full mb-2">
-          <div className="text-xl sm:text-2xl font-bold mb-1 text-blue-800 text-center">Welcome, {user.name}!</div>
-          <div className="text-sm sm:text-base text-gray-500 mb-2 text-center break-all">{user.email}</div>
-        </div>
-        {/* Create Note button and modal-like textarea */}
+
+      {/* Create Note button/area OUTSIDE the card */}
+      <div className="w-full max-w-md flex flex-col items-center mb-4">
         {!showCreate ? (
           <button
             className="w-full py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold text-base shadow mb-2 transition"
@@ -182,6 +202,13 @@ const Dashboard: React.FC<Props> = ({ onSignOut, user }) => {
             </div>
           </div>
         )}
+      </div>
+
+      <div className="w-full max-w-md bg-white rounded-2xl shadow-xl p-5 sm:p-8 flex flex-col items-center gap-3 border border-slate-200">
+        <div className="flex flex-col items-center w-full mb-2">
+          <div className="text-xl sm:text-2xl font-bold mb-1 text-blue-800 text-center">Welcome, {user.name}!</div>
+          <div className="text-sm sm:text-base text-gray-500 mb-2 text-center break-all">{user.email}</div>
+        </div>
         {error && <div className="text-red-500 text-sm mb-2 w-full text-center">{error}</div>}
         <div className="w-full mt-2">
           <div className="text-lg font-semibold mb-2 text-blue-700">Notes</div>
@@ -192,7 +219,11 @@ const Dashboard: React.FC<Props> = ({ onSignOut, user }) => {
               <div className="text-center text-gray-400">No notes yet.</div>
             ) : (
               notes.map((note) => (
-                <div key={note._id} className="bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 flex items-center justify-between shadow-sm hover:shadow-md transition">
+                <div
+                  key={note._id}
+                  className="border border-slate-200 rounded-xl px-3 py-2 flex items-center justify-between shadow-sm hover:shadow-md transition"
+                  style={{ background: getNoteColor(note._id) }}
+                >
                   {editingId === note._id ? (
                     <>
                       <input
