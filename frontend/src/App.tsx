@@ -40,8 +40,18 @@ const App = () => {
       <ToastContainer position="top-right" autoClose={3000} hideProgressBar={false} newestOnTop closeOnClick pauseOnFocusLoss draggable pauseOnHover />
       <BrowserRouter>
         <Routes>
-          <Route path="/signup" element={<SignUp onSwitch={page => navigate(page === 'signin' ? '/signin' : '/signup')} />} />
-          <Route path="/signin" element={<SignIn onSwitch={page => navigate(page === 'signup' ? '/signup' : '/signin')} onSignInSuccess={handleSignInSuccess} />} />
+          <Route
+            path="/signup"
+            element={
+              user ? <Navigate to="/dashboard" replace /> : <SignUp onSwitch={page => navigate(page === 'signin' ? '/signin' : '/signup')} />
+            }
+          />
+          <Route
+            path="/signin"
+            element={
+              user ? <Navigate to="/dashboard" replace /> : <SignIn onSwitch={page => navigate(page === 'signup' ? '/signup' : '/signin')} onSignInSuccess={handleSignInSuccess} />
+            }
+          />
           <Route path="/dashboard" element={user ? <Dashboard onSignOut={handleSignOut} user={user} /> : <Navigate to="/signin" replace />} />
           <Route path="*" element={<Navigate to={user ? '/dashboard' : '/signup'} replace />} />
         </Routes>
