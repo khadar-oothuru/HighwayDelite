@@ -12,7 +12,7 @@ const app = express();
 
 
 app.use(cors({
-  origin: 'https://highway-delite-iota.vercel.app/',
+  origin: 'https://highway-delite-iota.vercel.app',
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],

@@ -1,14 +1,23 @@
 {
+  "name": "server",
+  "version": "1.0.0",
+  "description": "",
+  "license": "ISC",
+  "author": "",
+  "type": "commonjs",
+  "main": "server.ts",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "nodemon server.ts",
+    "build": "tsc"
+    
+  },
   "devDependencies": {
     "@types/cors": "^2.8.19",
     "@types/express": "^5.0.3",
     "@types/node": "^24.1.0",
     "ts-node": "^10.9.2",
     "typescript": "^5.8.3"
-  },
-  "scripts": {
-    "build": "tsc",
-    "start": "node dist/server.js"
   },
   "dependencies": {
     "bcryptjs": "^3.0.2",
