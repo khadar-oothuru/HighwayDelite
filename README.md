@@ -68,12 +68,19 @@ npm install
 yarn install
 ```
 
+
 ### Environment Variables
 Create a `.env` file in the `server/` directory with the following:
 ```
-MONGODB_URI=your_mongodb_connection_string
+MONGO_URI=your_mongodb_connection_string
 JWT_SECRET=your_jwt_secret
 PORT=5000
+SMTP_HOST=your_smtp_host
+SMTP_PORT=your_smtp_port
+SMTP_USER=your_smtp_user
+SMTP_PASS=your_smtp_password
+SMTP_FROM=your_email_address
+CLIENT_URL=https://highway-delite-iota.vercel.app
 ```
 
 ### Running Locally
