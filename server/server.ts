@@ -24,7 +24,16 @@ app.use(cors({
 app.use(express.json());
 
 
-app.get("/", (req, res) => res.send("Hello World!"))
+app.get("/", (req, res) => {
+  res.status(200).json({
+    message: "Welcome to HighwayDelite Note-Taking API!",
+    endpoints: {
+      auth: "/api/auth",
+      notes: "/api/notes"
+    },
+    status: "API is running. See documentation for usage."
+  });
+})
 
 app.use('/api/auth', authRoutes);
 app.use('/api/notes', noteRoutes);
