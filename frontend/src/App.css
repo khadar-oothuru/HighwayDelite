@@ -1,12 +1,28 @@
 /* Hide the default calendar icon for input[type=date] so only the custom icon is visible */
 .custom-date-input::-webkit-calendar-picker-indicator {
-    opacity: 0;
-    display: none;
+    opacity: 0 !important;
+    display: none !important;
+    -webkit-appearance: none !important;
 }
 
+/* For Firefox */
+.custom-date-input[type="date"]::-moz-focus-inner,
+.custom-date-input[type="date"]::-moz-focus-outer {
+    border: 0;
+}
+
+/* For Edge/IE */
 .custom-date-input::-ms-clear,
 .custom-date-input::-ms-expand {
     display: none;
+}
+
+/* Remove default appearance for all browsers */
+.custom-date-input[type="date"] {
+    -webkit-appearance: none !important;
+    -moz-appearance: none !important;
+    appearance: none !important;
+    background: none !important;
 }
 
 .custom-date-input::placeholder {
@@ -17,12 +33,6 @@
     background-color: #fff;
     border-color: #2563eb;
     box-shadow: 0 0 0 2px #2563eb33;
-}
-
-/* Hide the default calendar icon for input[type=date] and style the date input for a modern look */
-.custom-date-input::-webkit-calendar-picker-indicator {
-    opacity: 0;
-    display: none;
 }
 
 .custom-date-input::-webkit-input-placeholder {
@@ -31,14 +41,4 @@
 
 .custom-date-input:-ms-input-placeholder {
     color: #9ca3af;
-}
-
-.custom-date-input::placeholder {
-    color: #9ca3af;
-}
-
-.custom-date-input:focus {
-    background-color: #fff;
-    border-color: #2563eb;
-    box-shadow: 0 0 0 2px #2563eb33;
 }

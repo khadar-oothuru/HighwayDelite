@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import logoImg from '../assets/image.png';
 import { Calendar } from 'lucide-react';
+import DatePicker from 'react-datepicker';
+import 'react-datepicker/dist/react-datepicker.css';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
@@ -102,22 +104,41 @@ const SignUp: React.FC<Props> = ({ onSwitch }) => {
             <div>
               <label className="text-xs font-medium text-gray-400 mb-1 block tracking-wide">Date of Birth</label>
               <div className="relative">
-                <span
-                  className="absolute left-4 top-1/2 -translate-y-1/2 text-blue-500 w-5 h-5 flex items-center pointer-events-none"
-                  aria-hidden="true"
-                >
-                  <Calendar />
-                </span>
-                <input
-                  id="dob-input"
-                  type="date"
-                  className="w-full pl-12 pr-4 py-3 border border-gray-200 rounded-lg text-base outline-none focus:border-blue-500 transition-colors bg-gray-50 placeholder-gray-400 custom-date-input"
-                  value={dob}
-                  onChange={e => setDob(e.target.value)}
-                  placeholder="YYYY-MM-DD"
-                  max={new Date().toISOString().slice(0, 10)}
+                <DatePicker
+                  selected={dob ? new Date(dob) : null}
+                  onChange={date => {
+                    if (date) {
+                      const yyyy = date.getFullYear();
+                      const mm = String(date.getMonth() + 1).padStart(2, '0');
+                      const dd = String(date.getDate()).padStart(2, '0');
+                      setDob(`${yyyy}-${mm}-${dd}`);
+                    } else {
+                      setDob('');
+                    }
+                  }}
+                  maxDate={new Date()}
+                  showMonthDropdown
+                  showYearDropdown
+                  dropdownMode="select"
+                  dateFormat="yyyy-MM-dd"
+                  placeholderText="YYYY-MM-DD"
                   disabled={otpSent}
-                  style={{ WebkitAppearance: 'none', MozAppearance: 'none', appearance: 'none', color: dob ? '#111827' : '#9ca3af', backgroundColor: '#f9fafb', fontWeight: 500 }}
+                  className="w-full pl-12 pr-4 py-3 h-12 border border-gray-200 rounded-lg text-base outline-none focus:border-blue-500 transition-colors bg-gray-50 placeholder-gray-400 custom-date-input"
+                  autoComplete="off"
+                  customInput={
+                    <div className="w-full flex items-center cursor-pointer h-12">
+                      <span className="absolute left-4 top-1/2 -translate-y-1/2 text-blue-500 w-5 h-5 flex items-center">
+                        <Calendar />
+                      </span>
+                      <input
+                        className="w-full pl-12 pr-4 py-3 h-12 border-none bg-transparent outline-none"
+                        value={dob}
+                        readOnly
+                        placeholder="YYYY-MM-DD"
+                        style={{ color: dob ? '#111827' : '#9ca3af', fontWeight: 500 }}
+                      />
+                    </div>
+                  }
                 />
               </div>
             </div>
