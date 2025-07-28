@@ -4,7 +4,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { getNotes, updateNote, createNote, deleteNote } from '../config/api';
-import { Pencil, Trash2 } from 'lucide-react';
+import { Pencil, Trash2, Check, X, LogOut } from 'lucide-react';
 import userAvatar from '../assets/image.png';
 import { toast } from 'react-toastify';
 
@@ -127,27 +127,29 @@ const Dashboard: React.FC<Props> = ({ onSignOut, user }) => {
     setEditContent('');
   };
 
-  // Muted color palette for notes
+  // Softer color palette for notes (200-level Tailwind colors)
   const noteColors = [
-    '#f1f5f9', // slate-100
-    '#fef9c3', // yellow-100
-    '#f0fdf4', // green-50
-    '#f3f4f6', // gray-100
-    '#f0f9ff', // sky-50
-    '#fdf2f8', // pink-50
-    '#f3e8ff', // purple-50
-    '#fef2f2', // red-50
-    '#f1f5f9', // blue-50
-    '#fefce8', // amber-50
+    '#bfdbfe', // blue-200
+    '#fef08a', // yellow-200
+    '#bbf7d0', // green-200
+    '#e5e7eb', // gray-200
+    '#bae6fd', // sky-200
+    '#fbcfe8', // pink-200
+    '#ddd6fe', // purple-200
+    '#fecaca', // red-200
+    '#c7d2fe', // indigo-200
+    '#fde68a', // amber-200
   ];
 
-  // Assign a color to each note based on its _id (stable random)
+  // Assign a color to each note randomly but equally distributed
+  let colorIndex = 0;
+  const noteColorMap: Record<string, string> = {};
   const getNoteColor = (id: string) => {
-    let hash = 0;
-    for (let i = 0; i < id.length; i++) {
-      hash = id.charCodeAt(i) + ((hash << 5) - hash);
+    if (!noteColorMap[id]) {
+      noteColorMap[id] = noteColors[colorIndex % noteColors.length];
+      colorIndex++;
     }
-    return noteColors[Math.abs(hash) % noteColors.length];
+    return noteColorMap[id];
   };
 
   return (
@@ -162,38 +164,47 @@ const Dashboard: React.FC<Props> = ({ onSignOut, user }) => {
           />
           <span className="hidden sm:inline text-xl font-bold text-blue-700">Dashboard</span>
         </div>
-        <button className="text-blue-600 cursor-pointer text-base underline hover:text-blue-800 transition" onClick={onSignOut}>Sign Out</button>
+        <button
+          className="flex items-center gap-1 bg-blue-50 hover:bg-blue-100 text-blue-700 font-semibold px-4 py-2 rounded-lg shadow-sm border border-blue-200 transition focus:outline-none focus:ring-2 focus:ring-blue-300"
+          onClick={onSignOut}
+        >
+          <LogOut size={18} className="mr-1" /> Sign Out
+        </button>
       </div>
 
       {/* Create Note button/area OUTSIDE the card */}
       <div className="w-full max-w-md flex flex-col items-center mb-4">
         {!showCreate ? (
           <button
-            className="w-full py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold text-base shadow mb-2 transition"
+            className="w-full py-3 bg-gradient-to-r from-blue-500 via-blue-400 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white rounded-xl font-bold text-lg shadow-lg mb-2 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-300 focus:ring-offset-2"
             onClick={() => setShowCreate(true)}
+            style={{ letterSpacing: '0.03em' }}
           >
-            + Create Note
+            <span style={{ fontSize: '1.25rem', marginRight: 8 }}>+</span> Create Note
           </button>
         ) : (
-          <div className="w-full flex flex-col gap-2 mb-2">
+          <div className="w-full flex flex-col gap-2 mb-2 bg-white rounded-2xl shadow-xl border border-blue-200 p-4 animate-fade-in">
             <textarea
-              className="rounded-lg px-3 py-2 border border-gray-300 focus:border-blue-400 focus:ring-2 focus:ring-blue-100 resize-none min-h-[60px] text-base transition"
+              className="rounded-lg px-4 py-3 border-2 border-blue-200 focus:border-blue-400 focus:ring-2 focus:ring-blue-100 resize-none min-h-[70px] text-base transition placeholder-gray-400 bg-blue-50 font-medium"
               placeholder="Write your note..."
               value={newNoteContent}
               onChange={e => setNewNoteContent(e.target.value)}
               disabled={creating}
               autoFocus
+              maxLength={500}
+              style={{ boxShadow: '0 2px 8px 0 rgba(59,130,246,0.07)' }}
             />
-            <div className="flex gap-2 justify-end">
+            <div className="flex gap-2 justify-end mt-1">
               <button
-                className="bg-blue-600 hover:bg-blue-700 text-white rounded px-4 py-1 font-semibold shadow disabled:opacity-50 transition"
+                className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white rounded-lg px-6 py-2 font-semibold shadow-md transition-all duration-150 disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-blue-300"
                 onClick={handleCreateNote}
                 disabled={creating || !newNoteContent.trim()}
+                style={{ letterSpacing: '0.02em' }}
               >
                 {creating ? 'Saving...' : 'Save'}
               </button>
               <button
-                className="bg-gray-200 hover:bg-gray-300 text-gray-700 rounded px-4 py-1 font-semibold shadow transition"
+                className="bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg px-6 py-2 font-semibold shadow-sm transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-gray-300"
                 onClick={handleCreateCancel}
                 disabled={creating}
               >
@@ -204,6 +215,10 @@ const Dashboard: React.FC<Props> = ({ onSignOut, user }) => {
         )}
       </div>
 
+      {/* Notes title outside the card */}
+      <div className="w-full max-w-md flex items-start mb-2">
+        <div className="text-lg font-semibold text-blue-700">Notes</div>
+      </div>
       <div className="w-full max-w-md bg-white rounded-2xl shadow-xl p-5 sm:p-8 flex flex-col items-center gap-3 border border-slate-200">
         <div className="flex flex-col items-center w-full mb-2">
           <div className="text-xl sm:text-2xl font-bold mb-1 text-blue-800 text-center">Welcome, {user.name}!</div>
@@ -211,7 +226,6 @@ const Dashboard: React.FC<Props> = ({ onSignOut, user }) => {
         </div>
         {error && <div className="text-red-500 text-sm mb-2 w-full text-center">{error}</div>}
         <div className="w-full mt-2">
-          <div className="text-lg font-semibold mb-2 text-blue-700">Notes</div>
           <div className="flex flex-col gap-3">
             {loading ? (
               <div className="text-center text-gray-400">Loading...</div>
@@ -221,7 +235,7 @@ const Dashboard: React.FC<Props> = ({ onSignOut, user }) => {
               notes.map((note) => (
                 <div
                   key={note._id}
-                  className="border border-slate-200 rounded-xl px-3 py-2 flex items-center justify-between shadow-sm hover:shadow-md transition"
+                  className="border border-slate-200 rounded-xl px-3 py-4 sm:py-2 flex items-center justify-between shadow-sm hover:shadow-md transition min-h-[64px] sm:min-h-[48px] w-full"
                   style={{ background: getNoteColor(note._id) }}
                 >
                   {editingId === note._id ? (
@@ -235,32 +249,30 @@ const Dashboard: React.FC<Props> = ({ onSignOut, user }) => {
                         title="Edit note"
                       />
                       {/* Buttons below input on mobile, inline on desktop */}
-                      <div className="w-full flex flex-row gap-2 sm:w-auto sm:flex-row sm:items-center">
-                        <div className="w-full flex flex-col gap-2 sm:flex-row sm:w-auto sm:gap-2">
-                          <button
-                            className="w-full sm:w-auto flex items-center justify-center bg-green-500 hover:bg-green-600 text-white font-semibold rounded-full px-4 py-2 shadow transition text-base sm:rounded px-3 py-1 sm:text-base"
-                            style={{ minWidth: 40, minHeight: 40 }}
-                            onClick={() => handleEditSave(note._id)}
-                            aria-label="Save"
-                          >
-                            <span className="sm:hidden text-lg">✔</span>
-                            <span className="hidden sm:inline">Save</span>
-                          </button>
-                          <button
-                            className="w-full sm:w-auto flex items-center justify-center bg-gray-400 hover:bg-gray-500 text-white font-semibold rounded-full px-4 py-2 shadow transition text-base sm:bg-gray-300 sm:hover:bg-gray-400 sm:text-gray-800 sm:rounded sm:px-3 sm:py-1 sm:text-base"
-                            style={{ minWidth: 40, minHeight: 40 }}
-                            onClick={handleEditCancel}
-                            aria-label="Cancel"
-                          >
-                            <span className="sm:hidden text-lg">✖</span>
-                            <span className="hidden sm:inline">Cancel</span>
-                          </button>
-                        </div>
+                      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-2 ml-2 sm:ml-0">
+                        <button
+                          className="w-8 h-8 flex items-center justify-center bg-emerald-500 hover:bg-emerald-600 text-white font-bold rounded-full shadow transition text-base focus:outline-none focus:ring-2 focus:ring-emerald-200"
+                          style={{ fontSize: '1.1rem' }}
+                          onClick={() => handleEditSave(note._id)}
+                          aria-label="Save"
+                          title="Save"
+                        >
+                          <Check size={18} />
+                        </button>
+                        <button
+                          className="w-8 h-8 flex items-center justify-center bg-gray-200 hover:bg-gray-300 text-gray-700 font-bold rounded-full shadow transition text-base focus:outline-none focus:ring-2 focus:ring-gray-200"
+                          style={{ fontSize: '1.1rem' }}
+                          onClick={handleEditCancel}
+                          aria-label="Cancel"
+                          title="Cancel"
+                        >
+                          <X size={18} />
+                        </button>
                       </div>
                     </>
                   ) : (
                     <>
-                      <span className="truncate max-w-[140px] sm:max-w-[180px] text-base text-gray-800">{note.content}</span>
+                      <span className="text-base text-gray-800 break-words whitespace-pre-line">{note.content}</span>
                       <span className="flex items-center ml-2 gap-1">
                         <button className="text-blue-600 hover:bg-blue-100 rounded p-1 transition" onClick={() => handleEdit(note._id, note.content)} title="Edit">
                           <Pencil size={18} />
