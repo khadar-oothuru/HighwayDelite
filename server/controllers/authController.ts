@@ -9,12 +9,19 @@ const otpStore: Record<string, { otp: string; expires: number }> = {};
 
 export const sendOtp = async (req: Request, res: Response) => {
   try {
-    const { email, name, dateOfBirth } = req.body;
+    const { email, name, dateOfBirth, mode } = req.body;
     if (!email || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) {
       return res.status(400).json({ message: 'Invalid email address.' });
     }
+    // mode: 'signup' or 'signin'. Default to 'signup' for backward compatibility
+    const requestMode = mode || 'signup';
     const existingUser = await User.findOne({ email });
-    if (!existingUser) {
+    if (requestMode === 'signup') {
+      if (existingUser) {
+        // If user already exists, do not allow sending OTP for signup
+        return res.status(400).json({ message: 'User already exists. Please sign in instead.' });
+      }
+      // If new user, validate name and dateOfBirth
       if (!name || !dateOfBirth) {
         return res.status(400).json({ message: 'Name and date of birth are required.' });
       }
@@ -24,6 +31,10 @@ export const sendOtp = async (req: Request, res: Response) => {
       const cleanName = String(name).trim();
       if (cleanName.length < 2) {
         return res.status(400).json({ message: 'Name is too short.' });
+      }
+    } else if (requestMode === 'signin') {
+      if (!existingUser) {
+        return res.status(400).json({ message: 'User not found. Please sign up first.' });
       }
     }
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
@@ -53,7 +64,7 @@ export const sendOtp = async (req: Request, res: Response) => {
 
 export const verifyOtp = async (req: Request, res: Response) => {
   try {
-    const { email, otp, name, dateOfBirth } = req.body;
+    const { email, otp, name, dateOfBirth, mode } = req.body;
     if (!email || !otp) {
       return res.status(400).json({ message: 'Email and OTP are required.' });
     }
@@ -61,24 +72,36 @@ export const verifyOtp = async (req: Request, res: Response) => {
     if (!record || record.otp !== otp || record.expires < Date.now()) {
       return res.status(400).json({ message: 'Invalid or expired OTP.' });
     }
+    const requestMode = mode || 'signup';
     let user = await User.findOne({ email });
-    if (!user) {
-      if (!name || !dateOfBirth) {
-        return res.status(400).json({ message: 'Name and date of birth are required for sign up.' });
+    if (requestMode === 'signup') {
+      if (!user) {
+        // If user does not exist, proceed with sign up
+        if (!name || !dateOfBirth) {
+          return res.status(400).json({ message: 'Name and date of birth are required for sign up.' });
+        }
+        if (!/^\d{4}-\d{2}-\d{2}$/.test(dateOfBirth)) {
+          return res.status(400).json({ message: 'Invalid date of birth format. Use YYYY-MM-DD.' });
+        }
+        const cleanName = String(name).trim();
+        if (cleanName.length < 2) {
+          return res.status(400).json({ message: 'Name is too short.' });
+        }
+        user = new User({ email, name: cleanName, dateOfBirth });
+        try {
+          await user.save();
+        } catch (err: any) {
+          return res.status(500).json({ message: 'Failed to create user.', error: err?.message || err });
+        }
+      } else {
+        // If user already exists, do not allow sign up again
+        return res.status(400).json({ message: 'User already exists. Please sign in instead.' });
       }
-      if (!/^\d{4}-\d{2}-\d{2}$/.test(dateOfBirth)) {
-        return res.status(400).json({ message: 'Invalid date of birth format. Use YYYY-MM-DD.' });
+    } else if (requestMode === 'signin') {
+      if (!user) {
+        return res.status(400).json({ message: 'User not found. Please sign up first.' });
       }
-      const cleanName = String(name).trim();
-      if (cleanName.length < 2) {
-        return res.status(400).json({ message: 'Name is too short.' });
-      }
-      user = new User({ email, name: cleanName, dateOfBirth });
-      try {
-        await user.save();
-      } catch (err: any) {
-        return res.status(500).json({ message: 'Failed to create user.', error: err?.message || err });
-      }
+      // For sign in, just proceed
     }
     delete otpStore[email];
     const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET || 'jwtsecret', { expiresIn: '7d' });

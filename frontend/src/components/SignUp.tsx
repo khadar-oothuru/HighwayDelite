@@ -58,10 +58,15 @@ const SignUp: React.FC<Props> = ({ onSwitch }) => {
     setLoading(true);
     try {
       const dateOfBirth = formatDob(dob);
-      await verifyOtp({ email, otp, name, dateOfBirth });
+      const res = await verifyOtp({ email, otp, name, dateOfBirth });
+      // Expecting res.data.token and res.data.user
+      const { token, user } = res.data || {};
+      if (token && user) {
+        localStorage.setItem('token', token);
+        localStorage.setItem('user', JSON.stringify(user));
+      }
       toast.success('Sign up successful!');
-      // Optionally, store token/user info here
-      onSwitch('signin');
+      window.location.replace('/dashboard');
     } catch (err: unknown) {
       const error = err as { response?: { data?: { message?: string } } };
       toast.error(error?.response?.data?.message || 'Failed to verify OTP');
@@ -154,7 +159,7 @@ const SignUp: React.FC<Props> = ({ onSwitch }) => {
             </button>
           ) : (
             <button
-              className="w-full py-3 bg-green-600 hover:bg-green-700 text-white rounded-lg font-semibold text-base mt-8 transition-colors shadow-sm disabled:opacity-60"
+              className="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold text-base mt-8 transition-colors shadow-sm disabled:opacity-60"
               type="button"
               onClick={handleVerifyOtp}
               disabled={loading}

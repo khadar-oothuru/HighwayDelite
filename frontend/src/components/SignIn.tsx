@@ -16,15 +16,17 @@ const SignIn: React.FC<Props> = ({ onSwitch, onSignInSuccess }) => {
   const [otp, setOtp] = useState('');
   const [showOtp, setShowOtp] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [otpSent, setOtpSent] = useState(false);
 
-  const handleResendOtp = async () => {
+  const handleSendOtp = async () => {
     if (!email) {
       toast.error('Please enter your email first!');
       return;
     }
     setLoading(true);
     try {
-      await sendOtp({ email });
+      await sendOtp({ email, mode: 'signin' });
+      setOtpSent(true);
       toast.success('OTP sent to your email!');
     } catch (err: unknown) {
       const error = err as { response?: { data?: { message?: string } } };
@@ -41,7 +43,7 @@ const SignIn: React.FC<Props> = ({ onSwitch, onSignInSuccess }) => {
     }
     setLoading(true);
     try {
-      const res = await verifyOtp({ email, otp });
+      const res = await verifyOtp({ email, otp, mode: 'signin' });
       const { token, user } = res.data;
       localStorage.setItem('token', token);
       localStorage.setItem('user', JSON.stringify(user));
@@ -70,37 +72,41 @@ const SignIn: React.FC<Props> = ({ onSwitch, onSignInSuccess }) => {
           <div className="space-y-4">
             <div>
               <label className="text-sm text-gray-600 mb-2 block">Email</label>
-              <input 
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg text-base outline-none focus:border-blue-500 transition-colors" 
-                value={email} 
-                onChange={e => setEmail(e.target.value)} 
+              <input
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg text-base outline-none focus:border-blue-500 transition-colors"
+                value={email}
+                onChange={e => {
+                  setEmail(e.target.value);
+                  setOtp('');
+                  setOtpSent(false);
+                }}
                 placeholder="jonas_kahnwald@gmail.com"
                 type="email"
+                disabled={otpSent}
               />
             </div>
-            
-            <div>
-              <label className="text-sm text-gray-600 mb-2 block">OTP</label>
-              <div className="relative">
-                <input 
-                  className="w-full px-4 py-3 pr-12 border border-gray-300 rounded-lg text-base outline-none focus:border-blue-500 transition-colors" 
-                  value={otp} 
-                  onChange={e => setOtp(e.target.value)} 
-                  placeholder="Enter OTP" 
-                  type={showOtp ? 'text' : 'password'} 
-                />
-                <button 
-                  className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors" 
-                  type="button" 
-                  onClick={() => setShowOtp(s => !s)}
-                >
-                  {showOtp ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-                </button>
+
+            {otpSent && (
+              <div>
+                <label className="text-sm text-gray-600 mb-2 block">OTP</label>
+                <div className="relative">
+                  <input
+                    className="w-full px-4 py-3 pr-12 border border-gray-300 rounded-lg text-base outline-none focus:border-blue-500 transition-colors"
+                    value={otp}
+                    onChange={e => setOtp(e.target.value)}
+                    placeholder="Enter OTP"
+                    type={showOtp ? 'text' : 'password'}
+                  />
+                  <button
+                    className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                    type="button"
+                    onClick={() => setShowOtp(s => !s)}
+                  >
+                    {showOtp ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                  </button>
+                </div>
               </div>
-              <button className="text-sm text-blue-600 hover:underline mt-2" type="button" onClick={handleResendOtp} disabled={loading}>
-                {loading ? 'Sending...' : 'Resend OTP'}
-              </button>
-            </div>
+            )}
             
             <div className="flex items-center">
               <input 
@@ -114,14 +120,25 @@ const SignIn: React.FC<Props> = ({ onSwitch, onSignInSuccess }) => {
             </div>
           </div>
           
-          <button
-            className="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium text-base mt-6 transition-colors disabled:opacity-60"
-            type="button"
-            onClick={handleSignIn}
-            disabled={loading}
-          >
-            {loading ? 'Signing in...' : 'Sign in'}
-          </button>
+          {!otpSent ? (
+            <button
+              className="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium text-base mt-6 transition-colors disabled:opacity-60"
+              type="button"
+              onClick={handleSendOtp}
+              disabled={loading}
+            >
+              {loading ? 'Sending OTP...' : 'Send OTP'}
+            </button>
+          ) : (
+            <button
+              className="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium text-base mt-6 transition-colors disabled:opacity-60"
+              type="button"
+              onClick={handleSignIn}
+              disabled={loading}
+            >
+              {loading ? 'Signing in...' : 'Sign in'}
+            </button>
+          )}
           
           <div className="text-sm text-gray-600 mt-6 text-center">
             Need an account? 

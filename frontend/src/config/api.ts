@@ -2,6 +2,7 @@ import axios from 'axios';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://highway-delite-backend.vercel.app/api';
 
+
 const axiosInstance = axios.create({
   baseURL: API_BASE_URL,
   withCredentials: true,
@@ -16,10 +17,11 @@ axiosInstance.interceptors.request.use((config) => {
   return config;
 });
 
-export const sendOtp = (data: { email: string; name?: string; dateOfBirth?: string }) =>
+
+export const sendOtp = (data: { email: string; name?: string; dateOfBirth?: string; mode?: 'signup' | 'signin' }) =>
   axiosInstance.post('/auth/send-otp', data);
 
-export const verifyOtp = (data: { email: string; otp: string; name?: string; dateOfBirth?: string }) =>
+export const verifyOtp = (data: { email: string; otp: string; name?: string; dateOfBirth?: string; mode?: 'signup' | 'signin' }) =>
   axiosInstance.post('/auth/verify-otp', data);
 
 export const login = (email: string, password: string) =>
